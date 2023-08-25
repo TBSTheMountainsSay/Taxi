@@ -1,0 +1,8 @@
+.customTitleSmall {
+  display: flex;
+  .titleSmall {
+    font-size: 4rem;
+    font-weight: 500;
+    color: var(--main-text);
+  }
+}

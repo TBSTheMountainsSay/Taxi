@@ -1,0 +1,18 @@
+.CustomButton {
+  display: flex;
+  flex-direction: row;
+  padding: 1rem 5rem;
+  background-color: var(--def);
+  border-radius: 25px;
+  transition: 0.3s;
+  cursor: pointer;
+  button {
+    font-weight: 500;
+    font-size: 3rem;
+  }
+}
+
+.CustomButton:hover {
+  background-color: var(--hover);
+  transition: 0.3s;
+}

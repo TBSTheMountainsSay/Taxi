@@ -1,0 +1,17 @@
+.customTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: start;
+  .title {
+    font-size: 5rem;
+    font-weight: 700;
+    color: var(--main-text);
+  }
+}
+
+@media (max-width: 1150px) {
+  .customTitle {
+    align-self: center;
+  }
+}

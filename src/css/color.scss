@@ -1,0 +1,15 @@
+$palette: (
+  white: #fff,
+  light_grey: #eaeaea,
+  yellow: #ffcc0080,
+  grey: #939393,
+  black: #000,
+);
+
+$light-theme: (
+  def: map-get($palette, white),
+  background: map-get($palette, yellow),
+  text: map_get($palette, grey),
+  main-text: map_get($palette, black),
+  hover: map_get($palette, light_grey),
+);

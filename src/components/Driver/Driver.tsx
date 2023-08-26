@@ -1,20 +1,7 @@
 import React from 'react';
 import styles from './Driver.module.scss';
 import clsx from 'clsx';
-
-type TDriverProps = {
-  crew_id?: number;
-  car_mark: string;
-  car_model: string;
-  car_color: string;
-  car_number?: string;
-  driver_name?: string;
-  driver_phone?: number;
-  lat?: number;
-  lon?: number;
-  distance: number;
-  isChoosen?: boolean;
-};
+import { TDriverProps } from 'src/features/Application/Application.types';
 
 const Driver: React.FC<TDriverProps> = ({
   crew_id,

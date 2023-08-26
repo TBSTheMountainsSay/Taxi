@@ -1,13 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './Application.module.scss';
 import CustomTitle from '../../components/CustomTitle/CustomTitle';
 import CustomTitleSmall from '../../components/CustomTitleSmall/CustomTitleSmall';
 import Driver from '../../components/Driver/Driver';
 import CustomButton from '../../components/CustomButton/CustomButton';
+import { Map, Placemark } from '@pbe/react-yandex-maps';
 
 type TApplicationProps = {};
 
 const Application: React.FC<TApplicationProps> = ({}) => {
+  const [map, setMap] = useState<ymaps.Map>();
+  console.log(map);
+
   return (
     <div className={styles.application}>
       <CustomTitle title={'Детали заказа'} />
@@ -38,12 +42,21 @@ const Application: React.FC<TApplicationProps> = ({}) => {
       </div>
       <div className={styles.info}>
         <div className={styles.map}>
-          <iframe
-            src="https://yandex.ru/map-widget/v1/?um=constructor%3Ab1f11837637e83ae3958622ca70d4b88b4ddce263b50f7385f5234ab5eaa7d42&amp;source=constructor"
-            width="100%"
-            height="450"
-            frameBorder="0"
-          ></iframe>
+          <Map
+            defaultState={{
+              center: [56.852909, 53.209912],
+              zoom: 15,
+              controls: ['zoomControl', 'fullscreenControl'],
+            }}
+            modules={['control.ZoomControl', 'control.FullscreenControl']}
+            width={'100%'}
+            height={450}
+            instanceRef={(value) => {
+              setMap(value);
+            }}
+          >
+            <Placemark defaultGeometry={[56.852909, 53.209912]} />
+          </Map>
         </div>
         <div className={styles.drivers}>
           <Driver

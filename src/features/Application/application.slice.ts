@@ -1,9 +1,9 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { TDriverProps, typeCurrentAddress } from './Application.types';
 
 export interface applicationState {
   currentAddress: typeCurrentAddress[];
-  taxiInfo: TDriverProps[];
+  drivers: TDriverProps[];
   meta: {
     fetching: boolean;
     creating: boolean;
@@ -14,7 +14,7 @@ export interface applicationState {
 
 const initialState: applicationState = {
   currentAddress: [],
-  taxiInfo: [
+  drivers: [
     {
       crew_id: 1,
       car_mark: 'Chevrolet',
@@ -89,5 +89,7 @@ const applicationSlice = createSlice({
   initialState,
   reducers: {},
 });
+
+export const {} = applicationSlice.actions;
 
 export default applicationSlice.reducer;

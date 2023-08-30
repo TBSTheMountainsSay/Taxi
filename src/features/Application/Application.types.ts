@@ -14,6 +14,5 @@ export type TDriverProps = {
   driver_phone?: string;
   lat?: number;
   lon?: number;
-  distance: number;
   isChoosen?: boolean;
 };

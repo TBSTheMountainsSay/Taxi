@@ -4,7 +4,7 @@
   padding: 1rem;
   border-bottom: 1px solid var(--text);
   transition: 0.3s;
-  margin-bottom: 2rem;
+  margin: 1rem;
   justify-content: space-between;
   .carInfo {
     display: flex;
@@ -15,6 +15,7 @@
     .car {
       font-size: 2.5rem;
       font-weight: 500;
+      text-align: start;
     }
     .carColor {
       display: flex;
@@ -36,7 +37,7 @@
 }
 .border {
   border: none;
-  margin-bottom: 0;
+  margin: 0;
 }
 
 .driver:hover {

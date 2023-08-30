@@ -4,18 +4,21 @@ import 'src/css/global.scss';
 import './App.css';
 import Application from './features/Application/Application';
 import { YMaps } from '@pbe/react-yandex-maps';
+import { SnackbarProvider } from 'notistack';
 
 function App() {
   return (
     <div className="App">
-      <YMaps
-        query={{
-          load: 'package.full',
-          apikey: '05f8d2ae-bd94-4329-b9f9-7351e2ec9627',
-        }}
-      >
-        <Application />
-      </YMaps>
+      <SnackbarProvider>
+        <YMaps
+          query={{
+            load: 'package.full',
+            apikey: process.env.REACT_APP_TOKEN,
+          }}
+        >
+          <Application />
+        </YMaps>
+      </SnackbarProvider>
     </div>
   );
 }

@@ -3,7 +3,15 @@ import styles from './Driver.module.scss';
 import clsx from 'clsx';
 import { TDriverProps } from 'src/features/Application/Application.types';
 
-const Driver: React.FC<TDriverProps> = ({
+interface IDriverProps extends TDriverProps {
+  distance: number;
+}
+
+const formatDistance = (metres: number): string => {
+  return metres < 1000 ? metres + 'м' : (metres / 1000).toFixed(1) + 'км';
+};
+
+const Driver: React.FC<IDriverProps> = ({
   crew_id,
   car_mark,
   car_model,
@@ -23,7 +31,7 @@ const Driver: React.FC<TDriverProps> = ({
         <div className={styles.carColor}>{car_color}</div>
         <div className={styles.carNumber}>{car_number}</div>
       </div>
-      <div className={styles.distance}>{distance + 'м'}</div>
+      <div className={styles.distance}>{formatDistance(distance)}</div>
     </div>
   );
 };

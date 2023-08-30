@@ -1,5 +1,6 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { TDriverProps, typeCurrentAddress } from './Application.types';
+import { RootState } from '../../app/store';
 
 export interface applicationState {
   currentAddress: typeCurrentAddress[];
@@ -25,7 +26,6 @@ const initialState: applicationState = {
       driver_phone: '7(70)936-01-96',
       lat: 56.855348,
       lon: 53.214337,
-      distance: 0,
     },
     {
       crew_id: 2,
@@ -37,7 +37,6 @@ const initialState: applicationState = {
       driver_phone: '7(324)088-13-82',
       lat: 56.874459,
       lon: 53.259335,
-      distance: 0,
     },
     {
       crew_id: 3,
@@ -49,7 +48,6 @@ const initialState: applicationState = {
       driver_phone: '7(64)765-19-21',
       lat: 56.834796,
       lon: 53.258822,
-      distance: 0,
     },
     {
       crew_id: 4,
@@ -61,7 +59,6 @@ const initialState: applicationState = {
       driver_phone: '7(25)279-81-30',
       lat: 56.825691,
       lon: 53.158953,
-      distance: 0,
     },
     {
       crew_id: 5,
@@ -73,7 +70,39 @@ const initialState: applicationState = {
       driver_phone: '7(704)274-50-19',
       lat: 56.870878,
       lon: 53.186418,
-      distance: 0,
+    },
+    {
+      crew_id: 6,
+      car_mark: 'Ford',
+      car_model: 'Mustang',
+      car_color: 'Жёлтый',
+      car_number: 'О272ОК',
+      driver_name: 'Иван',
+      driver_phone: '7(356)355-01-00',
+      lat: 56.851907,
+      lon: 53.300462,
+    },
+    {
+      crew_id: 7,
+      car_mark: 'Dodge',
+      car_model: 'Charger',
+      car_color: 'Красный',
+      car_number: 'У729АХ',
+      driver_name: 'Андрей',
+      driver_phone: '7(795)888-52-19',
+      lat: 56.839479,
+      lon: 53.211669,
+    },
+    {
+      crew_id: 8,
+      car_mark: 'Tesla',
+      car_model: 'Model X',
+      car_color: 'Серый',
+      car_number: 'Н581СМ',
+      driver_name: 'Илон',
+      driver_phone: '7(39)764-34-23',
+      lat: 56.850368,
+      lon: 53.26004,
     },
   ],
   meta: {
@@ -87,9 +116,21 @@ const initialState: applicationState = {
 const applicationSlice = createSlice({
   name: 'ApplicationReducer',
   initialState,
-  reducers: {},
+  reducers: {
+    changeCurrentAddress: (
+      state,
+      action: PayloadAction<{ coordinates: [number, number]; address: string }>
+    ) => {
+      const currentAddress = {
+        lat: action.payload.coordinates[0],
+        lon: action.payload.coordinates[1],
+        address: action.payload.address,
+      };
+      state.currentAddress.splice(0, 3, currentAddress);
+    },
+  },
 });
 
-export const {} = applicationSlice.actions;
+export const { changeCurrentAddress } = applicationSlice.actions;
 
 export default applicationSlice.reducer;

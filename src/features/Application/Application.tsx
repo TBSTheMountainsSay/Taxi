@@ -7,7 +7,7 @@ import CustomButton from '../../components/CustomButton/CustomButton';
 import { Map, Placemark, SearchControl } from '@pbe/react-yandex-maps';
 import { YMapsApi } from '@pbe/react-yandex-maps/typings/util/typing';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { changeCurrentAddress } from './application.slice';
+import { changeCurrentAddress, createOrder } from './application.slice';
 import { TDriverProps } from './Application.types';
 import { enqueueSnackbar } from 'notistack';
 
@@ -60,11 +60,15 @@ const Application: React.FC<TApplicationProps> = ({}) => {
   const nearDriver = drivers[0];
 
   const saveAddress = useCallback(
-    (coords: [number, number], address: string) => {
-      dispatch(changeCurrentAddress({ coordinates: coords, address }));
+    (address: string, coords: [number, number]) => {
+      dispatch(changeCurrentAddress({ address, coordinates: coords }));
     },
     []
   );
+
+  const saveOrder = useCallback((source_time: string, crew_id: number) => {
+    dispatch(createOrder({ source_time, crew_id }));
+  }, []);
 
   const handleTouch = useCallback(
     (event: any) => {
@@ -127,18 +131,21 @@ const Application: React.FC<TApplicationProps> = ({}) => {
       });
   };
 
-  const handleCreateOrder = (address: string) => {
-    if (!ymaps.current) return;
-    ymaps.current
-      .geocode(address)
-      .then((res: any) => {
-        const firstGeoObject = res.geoObjects.get(0).geometry._coordinates;
-        if (!firstGeoObject)
-          enqueueSnackbar('Адрес не найден!', { variant: 'error' });
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  const handleCreateOrder = () => {
+    if (
+      !address ||
+      (coordinates[0] === 56.852909 && coordinates[1] === 53.209912)
+    ) {
+      enqueueSnackbar('Адрес не найден!', { variant: 'error' });
+    } else {
+      if (!address) return;
+      const regExp = /\.|-|:|T|Z|\$/g;
+      const currentDate = new Date().toISOString().replace(regExp, '');
+      saveAddress(address, coordinates);
+      // @ts-ignore
+      saveOrder(currentDate, nearDriver.crew_id);
+      enqueueSnackbar('Заказ создан', { variant: 'success' });
+    }
   };
 
   return (
@@ -257,7 +264,7 @@ const Application: React.FC<TApplicationProps> = ({}) => {
           })}
         </div>
       </div>
-      <CustomButton title={'Заказать'} onClick={() => handleCreateOrder} />
+      <CustomButton title={'Заказать'} onClick={handleCreateOrder} />
     </div>
   );
 };

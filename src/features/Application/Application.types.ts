@@ -16,3 +16,9 @@ export type TDriverProps = {
   lon?: number;
   isChoosen?: boolean;
 };
+
+export type TOrderProps = {
+  source_time: string;
+  addresses: typeCurrentAddress[];
+  crew_id: number;
+};

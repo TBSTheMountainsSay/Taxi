@@ -1,10 +1,15 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { TDriverProps, typeCurrentAddress } from './Application.types';
+import {
+  TDriverProps,
+  TOrderProps,
+  typeCurrentAddress,
+} from './Application.types';
 import { RootState } from '../../app/store';
 
 export interface applicationState {
   currentAddress: typeCurrentAddress[];
   drivers: TDriverProps[];
+  order: TOrderProps;
   meta: {
     fetching: boolean;
     creating: boolean;
@@ -105,6 +110,7 @@ const initialState: applicationState = {
       lon: 53.26004,
     },
   ],
+  order: { source_time: '', addresses: [], crew_id: 0 },
   meta: {
     fetching: false,
     creating: false,
@@ -122,15 +128,24 @@ const applicationSlice = createSlice({
       action: PayloadAction<{ coordinates: [number, number]; address: string }>
     ) => {
       const currentAddress = {
+        address: action.payload.address,
         lat: action.payload.coordinates[0],
         lon: action.payload.coordinates[1],
-        address: action.payload.address,
       };
       state.currentAddress.splice(0, 3, currentAddress);
+    },
+
+    createOrder: (
+      state,
+      action: PayloadAction<{ source_time: string; crew_id: number }>
+    ) => {
+      state.order.source_time = action.payload.source_time;
+      state.order.addresses = state.currentAddress;
+      state.order.crew_id = action.payload.crew_id;
     },
   },
 });
 
-export const { changeCurrentAddress } = applicationSlice.actions;
+export const { changeCurrentAddress, createOrder } = applicationSlice.actions;
 
 export default applicationSlice.reducer;

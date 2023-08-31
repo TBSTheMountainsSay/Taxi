@@ -1,10 +1,10 @@
 export type typeCurrentAddress = {
-  address: string;
-  lat: number;
-  lon: number;
+  source_time: string;
+  addresses: { address: string; lat: number; lon: number };
+  crew_id?: number;
 };
 
-export type TDriverProps = {
+export type TDriver = {
   crew_id?: number;
   car_mark: string;
   car_model: string;
@@ -17,9 +17,6 @@ export type TDriverProps = {
   isChoosen?: boolean;
 };
 
-export type TOrderProps = {
-  source_time: string;
-  addresses: typeCurrentAddress[];
-  crew_id: number;
+export type TOrder = {
   order_id: number;
 };

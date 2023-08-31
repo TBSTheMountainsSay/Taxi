@@ -7,16 +7,17 @@ import CustomButton from '../../components/CustomButton/CustomButton';
 import { Map, Placemark, SearchControl } from '@pbe/react-yandex-maps';
 import { YMapsApi } from '@pbe/react-yandex-maps/typings/util/typing';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { changeCurrentAddress, createOrder } from './application.slice';
-import { TDriverProps } from './Application.types';
+import {
+  changeCurrentAddress,
+  createOrderThunk,
+  getCrewsThunk,
+} from './application.slice';
+import { TDriver } from './Application.types';
 import { enqueueSnackbar } from 'notistack';
 
 type TApplicationProps = {};
 
-const haversineFormula = (
-  coordinates: [number, number],
-  driver: TDriverProps
-) => {
+const haversineFormula = (coordinates: [number, number], driver: TDriver) => {
   return Math.round(
     60 *
       1.1515 *
@@ -37,15 +38,19 @@ const haversineFormula = (
   );
 };
 
+const getDate = () => {
+  const regExp = /\.|-|:|T|Z|\$/g;
+  return new Date().toISOString().replace(regExp, '');
+};
+
 const Application: React.FC<TApplicationProps> = ({}) => {
   const dispatch = useAppDispatch();
-
   const ymaps = React.useRef<YMapsApi>(null);
   const [activeClue, setActiveClue] = useState<boolean>(false);
   const [coordinates, setCoordinates] = useState<[number, number]>([
     56.852909, 53.209912,
   ]);
-  const [address, setAddress] = useState<string>();
+  const [address, setAddress] = useState<string>('Ижевск, Центральная площадь');
   const [addressVariants, setAddressVariants] = useState<string[]>([]);
   const [center, setCenter] = useState<[number, number]>(coordinates);
 
@@ -59,21 +64,41 @@ const Application: React.FC<TApplicationProps> = ({}) => {
 
   const nearDriver = drivers[0];
 
+  useEffect(() => {
+    saveAddress(getDate(), address, coordinates);
+    getCrews();
+  }, []);
+
   const saveAddress = useCallback(
-    (address: string, coords: [number, number]) => {
-      dispatch(changeCurrentAddress({ address, coordinates: coords }));
+    (
+      source_time: string,
+      address: string,
+      coords: [number, number],
+      crew_id?: number
+    ) => {
+      dispatch(
+        changeCurrentAddress({
+          source_time,
+          address,
+          coordinates: coords,
+          crew_id,
+        })
+      );
     },
     []
   );
 
-  const saveOrder = useCallback((source_time: string, crew_id: number) => {
-    dispatch(createOrder({ source_time, crew_id }));
+  const getCrews = useCallback(() => dispatch(getCrewsThunk()), []);
+
+  const saveOrder = useCallback(() => {
+    dispatch(createOrderThunk());
   }, []);
 
   const handleTouch = useCallback(
-    (event: any) => {
+    async (event: any) => {
       let myCoords = event.get('coords');
       setCoordinates(myCoords);
+      await getCrews().unwrap();
 
       if (!ymaps.current) return;
       ymaps.current
@@ -92,62 +117,68 @@ const Application: React.FC<TApplicationProps> = ({}) => {
             .join(', ');
           firstGeoObject.getAddressLine();
           setAddress(() => newAddress);
-          // saveAddress(myCoords, newAddress);
+          saveAddress(getDate(), newAddress, myCoords, nearDriver.crew_id);
         })
         .catch((error) => {
           console.log(error);
         });
     },
-    [ymaps, saveAddress]
+    [ymaps, saveAddress, nearDriver]
   );
 
-  const handleChangeAddress = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const currentAddress = event.target.value;
-    setAddress(currentAddress);
-    setActiveClue(true);
-    if (!ymaps.current) return;
-    ymaps.current.geocode(currentAddress).then((res: any) => {
-      const addressesArray = res.geoObjects.toArray();
-      setAddressVariants(
-        addressesArray.map((item: any) => item.properties._data.text)
-      );
-    });
-  };
-
-  const handleChooseAddress = (addressVariant: any) => {
-    setAddress(addressVariant);
-    setActiveClue(false);
-
-    if (!ymaps.current) return;
-    ymaps.current
-      .geocode(addressVariant)
-      .then((res: any) => {
-        const firstGeoObject = res.geoObjects.get(0).geometry._coordinates;
-        setCoordinates(firstGeoObject);
-        setCenter(firstGeoObject);
-      })
-      .catch((error) => {
-        console.log(error);
+  const handleChangeAddress = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const currentAddress = event.target.value;
+      setAddress(currentAddress);
+      setActiveClue(true);
+      if (!ymaps.current) return;
+      ymaps.current.geocode(currentAddress).then((res: any) => {
+        const addressesArray = res.geoObjects.toArray();
+        setAddressVariants(
+          addressesArray.map((item: any) => item.properties._data.text)
+        );
       });
-  };
+    },
+    []
+  );
 
-  const handleCreateOrder = () => {
-    if (
-      !address ||
-      (coordinates[0] === 56.852909 && coordinates[1] === 53.209912)
-    ) {
+  const handleChooseAddress = useCallback(
+    async (addressVariant: any) => {
+      setAddress(addressVariant);
+      setActiveClue(false);
+      await getCrews().unwrap();
+      if (!ymaps.current) return;
+      ymaps.current
+        .geocode(addressVariant)
+        .then((res: any) => {
+          const firstGeoObject = res.geoObjects.get(0).geometry._coordinates;
+          setCoordinates(firstGeoObject);
+          setCenter(firstGeoObject);
+          saveAddress(
+            getDate(),
+            addressVariant,
+            coordinates,
+            nearDriver.crew_id
+          );
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    [ymaps, saveAddress, nearDriver]
+  );
+
+  const handleCreateOrder = useCallback(() => {
+    if (!address) {
       enqueueSnackbar('Адрес не найден!', { variant: 'error' });
       return;
     } else {
-      if (!address) return;
-      const regExp = /\.|-|:|T|Z|\$/g;
-      const currentDate = new Date().toISOString().replace(regExp, '');
-      saveAddress(address, coordinates);
-      // @ts-ignore
-      saveOrder(currentDate, nearDriver.crew_id);
-      enqueueSnackbar('Заказ создан', { variant: 'success' });
+      saveAddress(getDate(), address, coordinates, nearDriver.crew_id);
+      getCrews();
+      saveOrder();
+      enqueueSnackbar('Заказ создан!', { variant: 'success' });
     }
-  };
+  }, [nearDriver]);
 
   return (
     <div className={styles.application}>

@@ -1,9 +1,9 @@
 import React from 'react';
 import styles from './Driver.module.scss';
 import clsx from 'clsx';
-import { TDriverProps } from 'src/features/Application/Application.types';
+import { TDriver } from 'src/features/Application/Application.types';
 
-interface IDriverProps extends TDriverProps {
+interface IDriverProps extends TDriver {
   distance: number;
 }
 

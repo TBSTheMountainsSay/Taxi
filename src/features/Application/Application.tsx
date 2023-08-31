@@ -137,6 +137,7 @@ const Application: React.FC<TApplicationProps> = ({}) => {
       (coordinates[0] === 56.852909 && coordinates[1] === 53.209912)
     ) {
       enqueueSnackbar('Адрес не найден!', { variant: 'error' });
+      return;
     } else {
       if (!address) return;
       const regExp = /\.|-|:|T|Z|\$/g;

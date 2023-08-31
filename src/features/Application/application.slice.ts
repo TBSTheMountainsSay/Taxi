@@ -9,7 +9,7 @@ import { RootState } from '../../app/store';
 export interface applicationState {
   currentAddress: typeCurrentAddress[];
   drivers: TDriverProps[];
-  order: TOrderProps;
+  order: TOrderProps[];
   meta: {
     fetching: boolean;
     creating: boolean;
@@ -110,7 +110,7 @@ const initialState: applicationState = {
       lon: 53.26004,
     },
   ],
-  order: { source_time: '', addresses: [], crew_id: 0 },
+  order: [{ source_time: '', addresses: [], crew_id: 0, order_id: 0 }],
   meta: {
     fetching: false,
     creating: false,
@@ -139,9 +139,13 @@ const applicationSlice = createSlice({
       state,
       action: PayloadAction<{ source_time: string; crew_id: number }>
     ) => {
-      state.order.source_time = action.payload.source_time;
-      state.order.addresses = state.currentAddress;
-      state.order.crew_id = action.payload.crew_id;
+      const newOrder = {
+        source_time: action.payload.source_time,
+        addresses: state.currentAddress,
+        crew_id: action.payload.crew_id,
+        order_id: state.order[state.order.length - 1].order_id + 1,
+      };
+      state.order.push(newOrder);
     },
   },
 });

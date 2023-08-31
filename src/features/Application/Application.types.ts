@@ -21,4 +21,5 @@ export type TOrderProps = {
   source_time: string;
   addresses: typeCurrentAddress[];
   crew_id: number;
+  order_id: number;
 };

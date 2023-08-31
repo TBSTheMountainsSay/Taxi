@@ -1,7 +1,5 @@
-export type typeCurrentAddress = {
-  source_time: string;
+export type TGeolocation = {
   addresses: { address: string; lat: number; lon: number };
-  crew_id?: number;
 };
 
 export type TDriver = {

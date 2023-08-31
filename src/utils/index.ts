@@ -1,0 +1,1 @@
+export const getDate = () => {	const regExp = /\.|-|:|T|Z|\$/g;	return new Date().toISOString().replace(regExp, '');};

@@ -1,10 +1,11 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { TDriver, TOrder, typeCurrentAddress } from './Application.types';
+import { TDriver, TOrder, TGeolocation } from './Application.types';
 import { RootState } from '../../app/store';
 import { applicationAPI } from '../../api/applicationAPI';
+import { getDate } from '../../utils';
 
 export interface applicationState {
-  currentAddress: typeCurrentAddress | null;
+  currentAddress: TGeolocation | null;
   drivers: TDriver[];
   orders: TOrder[];
   meta: {
@@ -34,20 +35,16 @@ const applicationSlice = createSlice({
     changeCurrentAddress: (
       state,
       action: PayloadAction<{
-        source_time: string;
         address: string;
         coordinates: [number, number];
-        crew_id?: number;
       }>
     ) => {
       const currentAddress = {
-        source_time: action.payload.source_time,
         addresses: {
           address: action.payload.address,
           lat: action.payload.coordinates[0],
           lon: action.payload.coordinates[1],
         },
-        crew_id: action.payload.crew_id,
       };
       state.currentAddress = currentAddress;
     },
@@ -73,7 +70,7 @@ export const getCrewsThunk = createAsyncThunk(
       return thunkAPI.rejectWithValue('');
     try {
       const addressInfo = {
-        source_time: globalState.ApplicationReducer.currentAddress.source_time,
+        source_time: getDate(),
         addresses: [
           {
             address:
@@ -96,13 +93,12 @@ export const getCrewsThunk = createAsyncThunk(
 
 export const createOrderThunk = createAsyncThunk(
   'ApplicationReducer/createOrder',
-  async (_, thunkAPI) => {
+  async (nearestDriverId: number, thunkAPI) => {
     const globalState = thunkAPI.getState() as RootState;
     if (!globalState.ApplicationReducer.currentAddress)
       return thunkAPI.rejectWithValue('');
     try {
       const addressInfo = {
-        source_time: globalState.ApplicationReducer.currentAddress.source_time,
         addresses: [
           {
             address:
@@ -111,12 +107,11 @@ export const createOrderThunk = createAsyncThunk(
             lon: globalState.ApplicationReducer.currentAddress.addresses.lon,
           },
         ],
-        crew_id: globalState.ApplicationReducer.currentAddress.crew_id,
       };
       const { data } = await applicationAPI.createOrder(
-        addressInfo.source_time,
+        getDate(),
         addressInfo.addresses,
-        addressInfo.crew_id
+        nearestDriverId
       );
       return data;
     } catch (e: any) {

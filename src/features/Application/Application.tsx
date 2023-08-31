@@ -1,10 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import styles from './Application.module.scss';
 import CustomTitle from '../../components/CustomTitle/CustomTitle';
 import CustomTitleSmall from '../../components/CustomTitleSmall/CustomTitleSmall';
 import Driver from '../../components/Driver/Driver';
 import CustomButton from '../../components/CustomButton/CustomButton';
-import { Map, Placemark, SearchControl } from '@pbe/react-yandex-maps';
+import { Map, Placemark } from '@pbe/react-yandex-maps';
 import { YMapsApi } from '@pbe/react-yandex-maps/typings/util/typing';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import {
@@ -38,11 +38,6 @@ const haversineFormula = (coordinates: [number, number], driver: TDriver) => {
   );
 };
 
-const getDate = () => {
-  const regExp = /\.|-|:|T|Z|\$/g;
-  return new Date().toISOString().replace(regExp, '');
-};
-
 const Application: React.FC<TApplicationProps> = ({}) => {
   const dispatch = useAppDispatch();
   const ymaps = React.useRef<YMapsApi>(null);
@@ -65,23 +60,16 @@ const Application: React.FC<TApplicationProps> = ({}) => {
   const nearDriver = drivers[0];
 
   useEffect(() => {
-    saveAddress(getDate(), address, coordinates);
+    saveAddress(address, coordinates);
     getCrews();
   }, []);
 
   const saveAddress = useCallback(
-    (
-      source_time: string,
-      address: string,
-      coords: [number, number],
-      crew_id?: number
-    ) => {
+    (address: string, coords: [number, number]) => {
       dispatch(
         changeCurrentAddress({
-          source_time,
           address,
           coordinates: coords,
-          crew_id,
         })
       );
     },
@@ -90,9 +78,10 @@ const Application: React.FC<TApplicationProps> = ({}) => {
 
   const getCrews = useCallback(() => dispatch(getCrewsThunk()), []);
 
-  const saveOrder = useCallback(() => {
-    dispatch(createOrderThunk());
-  }, []);
+  const saveOrder = useCallback(
+    (crewId: number) => dispatch(createOrderThunk(crewId)),
+    []
+  );
 
   const handleTouch = useCallback(
     async (event: any) => {
@@ -117,7 +106,7 @@ const Application: React.FC<TApplicationProps> = ({}) => {
             .join(', ');
           firstGeoObject.getAddressLine();
           setAddress(() => newAddress);
-          saveAddress(getDate(), newAddress, myCoords, nearDriver.crew_id);
+          saveAddress(newAddress, myCoords);
         })
         .catch((error) => {
           console.log(error);
@@ -126,18 +115,21 @@ const Application: React.FC<TApplicationProps> = ({}) => {
     [ymaps, saveAddress, nearDriver]
   );
 
+  const getAddressVariants = async (addr: string): Promise<string[]> => {
+    if (!ymaps.current) return [];
+    const res = await ymaps.current.geocode(addr);
+    const addressesArray = res.geoObjects.toArray();
+    return addressesArray.map((item: any) => item.properties._data.text);
+  };
+
   const handleChangeAddress = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
       const currentAddress = event.target.value;
       setAddress(currentAddress);
       setActiveClue(true);
-      if (!ymaps.current) return;
-      ymaps.current.geocode(currentAddress).then((res: any) => {
-        const addressesArray = res.geoObjects.toArray();
-        setAddressVariants(
-          addressesArray.map((item: any) => item.properties._data.text)
-        );
-      });
+      if (!currentAddress) return;
+      const variants = await getAddressVariants(currentAddress);
+      setAddressVariants(variants);
     },
     []
   );
@@ -154,12 +146,7 @@ const Application: React.FC<TApplicationProps> = ({}) => {
           const firstGeoObject = res.geoObjects.get(0).geometry._coordinates;
           setCoordinates(firstGeoObject);
           setCenter(firstGeoObject);
-          saveAddress(
-            getDate(),
-            addressVariant,
-            coordinates,
-            nearDriver.crew_id
-          );
+          saveAddress(addressVariant, coordinates);
         })
         .catch((error) => {
           console.log(error);
@@ -168,17 +155,23 @@ const Application: React.FC<TApplicationProps> = ({}) => {
     [ymaps, saveAddress, nearDriver]
   );
 
-  const handleCreateOrder = useCallback(() => {
-    if (!address) {
-      enqueueSnackbar('Адрес не найден!', { variant: 'error' });
-      return;
-    } else {
-      saveAddress(getDate(), address, coordinates, nearDriver.crew_id);
-      getCrews();
-      saveOrder();
+  const handleCreateOrder = useCallback(async () => {
+    try {
+      if (!address) throw new Error('Адрес не найден');
+      const variants = await getAddressVariants(address);
+      if (
+        !variants.length ||
+        !variants.some((v) => v.toLowerCase().match(address.toLowerCase()))
+      )
+        throw new Error('Адрес не найден');
+      await getCrews().unwrap();
+      if (!nearDriver?.crew_id) throw new Error('Ошибка');
+      await saveOrder(nearDriver.crew_id).unwrap();
       enqueueSnackbar('Заказ создан!', { variant: 'success' });
+    } catch (e: any) {
+      enqueueSnackbar(e.message, { variant: 'error' });
     }
-  }, [nearDriver]);
+  }, [nearDriver, ymaps, address]);
 
   return (
     <div className={styles.application}>

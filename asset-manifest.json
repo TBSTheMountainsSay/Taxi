@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/Taxi/static/css/main.029a7020.css",
-    "main.js": "/Taxi/static/js/main.44df70e6.js",
-    "static/js/787.2b7e62db.chunk.js": "/Taxi/static/js/787.2b7e62db.chunk.js",
-    "index.html": "/Taxi/index.html",
-    "main.029a7020.css.map": "/Taxi/static/css/main.029a7020.css.map",
-    "main.44df70e6.js.map": "/Taxi/static/js/main.44df70e6.js.map",
-    "787.2b7e62db.chunk.js.map": "/Taxi/static/js/787.2b7e62db.chunk.js.map"
+    "main.css": "/Taxi_YandexMaps/static/css/main.029a7020.css",
+    "main.js": "/Taxi_YandexMaps/static/js/main.3ca2c3cb.js",
+    "static/js/787.2b7e62db.chunk.js": "/Taxi_YandexMaps/static/js/787.2b7e62db.chunk.js",
+    "index.html": "/Taxi_YandexMaps/index.html",
+    "main.029a7020.css.map": "/Taxi_YandexMaps/static/css/main.029a7020.css.map",
+    "main.3ca2c3cb.js.map": "/Taxi_YandexMaps/static/js/main.3ca2c3cb.js.map",
+    "787.2b7e62db.chunk.js.map": "/Taxi_YandexMaps/static/js/787.2b7e62db.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.029a7020.css",
-    "static/js/main.44df70e6.js"
+    "static/js/main.3ca2c3cb.js"
   ]
 }
